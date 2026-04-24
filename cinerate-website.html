@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CineRate – Movie Review & Rating</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080810;
+    --card: #12121e;
+    --card2: #1a1a2e;
+    --acc: #e50914;
+    --acc2: #f5a623;
+    --acc3: #00d4aa;
+    --txt: #f0f0f8;
+    --txt2: #8888aa;
+    --nav: #0d0d1a;
+    --border: #ffffff14;
+    --grad: linear-gradient(135deg,#e50914,#ff6b35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;}
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:#0d0d1a;}
+  ::-webkit-scrollbar-thumb{background:var(--acc);border-radius:3px;}
+
+  /* ─── NAV ─── */
+  nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(8,8,16,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:66px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--acc);letter-spacing:2px;cursor:pointer;}
+  .logo span{color:var(--txt);}
+  .nav-links{display:flex;gap:36px;list-style:none;}
+  .nav-links a{color:var(--txt2);text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.5px;transition:.2s;cursor:pointer;}
+  .nav-links a:hover,.nav-links a.active{color:var(--txt);}
+  .nav-cta{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:6px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;}
+  .nav-cta:hover{background:#c5070f;}
+
+  /* ─── PAGES ─── */
+  .page{display:none;min-height:100vh;padding-top:66px;}
+  .page.active{display:block;}
+
+  /* ─── HOME – HERO ─── */
+  .hero{position:relative;height:580px;overflow:hidden;background:#0a0a18;}
+  .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(229,9,20,.18),transparent);}
+  .hero-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2;width:100%;}
+  .hero-content h1{font-family:'Bebas Neue',sans-serif;font-size:92px;letter-spacing:4px;line-height:1;background:linear-gradient(135deg,#fff 40%,#e50914);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero-content p{color:var(--txt2);font-size:18px;margin:16px 0 32px;}
+  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+
+  /* ─── SLIDER ─── */
+  .slider-wrap{position:relative;width:100%;overflow:hidden;}
+  .slider-track{display:flex;transition:transform .5s cubic-bezier(.4,0,.2,1);}
+  .slide{min-width:100%;position:relative;}
+  .slide-inner{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;padding:60px 40px;}
+  .slide-info{flex:1;padding-right:60px;}
+  .slide-info .tag{display:inline-block;background:var(--acc);color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 12px;border-radius:4px;text-transform:uppercase;margin-bottom:16px;}
+  .slide-info h2{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:2px;line-height:1.05;margin-bottom:10px;}
+  .slide-info .genre{color:var(--txt2);font-size:15px;margin-bottom:20px;}
+  .slide-poster{width:280px;height:380px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:80px;border:1px solid var(--border);flex-shrink:0;position:relative;overflow:hidden;}
+  .slide-poster::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,9,20,.1),transparent);}
+  .slider-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;z-index:3;}
+  .arrow{pointer-events:all;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--txt);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:.2s;}
+  .arrow:hover{background:var(--acc);}
+  .slider-dots{display:flex;justify-content:center;gap:8px;padding:16px 0;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--txt2);border:none;cursor:pointer;transition:.2s;}
+  .dot.active{width:24px;border-radius:4px;background:var(--acc);}
+
+  /* ─── SECTION ─── */
+  .section{max-width:1200px;margin:0 auto;padding:60px 40px;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;margin-bottom:8px;}
+  .section-sub{color:var(--txt2);font-size:15px;margin-bottom:36px;}
+
+  /* ─── MOVIE GRID ─── */
+  .movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px;}
+  .movie-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.3s;cursor:pointer;}
+  .movie-card:hover{transform:translateY(-6px);border-color:rgba(229,9,20,.3);box-shadow:0 20px 40px rgba(0,0,0,.4);}
+  .movie-poster{height:220px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;}
+  .movie-poster .rating-badge{position:absolute;top:10px;right:10px;background:var(--acc2);color:#000;font-weight:700;font-size:12px;padding:4px 10px;border-radius:20px;}
+  .movie-body{padding:16px;}
+  .movie-title{font-weight:700;font-size:16px;margin-bottom:4px;}
+  .movie-genre{color:var(--txt2);font-size:13px;margin-bottom:10px;}
+  .stars{display:flex;gap:2px;margin-bottom:14px;}
+  .star{font-size:16px;color:#333;}
+  .star.filled{color:#FFD700;}
+  .card-btns{display:flex;gap:8px;}
+
+  /* ─── BUTTONS ─── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:8px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;white-space:nowrap;}
+  .btn-primary{background:var(--acc);color:#fff;}
+  .btn-primary:hover{background:#c5070f;transform:translateY(-1px);}
+  .btn-secondary{background:rgba(255,255,255,.06);color:var(--txt2);border:1px solid var(--border);}
+  .btn-secondary:hover{background:rgba(255,255,255,.12);color:var(--txt);}
+  .btn-amber{background:var(--acc2);color:#000;}
+  .btn-amber:hover{background:#e09500;transform:translateY(-1px);}
+  .btn-green{background:#27ae60;color:#fff;}
+  .btn-green:hover{background:#1f9050;}
+  .btn-blue{background:#2980b9;color:#fff;}
+  .btn-blue:hover{background:#1f6699;}
+  .btn-lg{padding:13px 28px;font-size:15px;border-radius:10px;}
+  .btn-sm{padding:8px 14px;font-size:12px;}
+
+  /* ─── FILTERS ─── */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;}
+  .filter-btn{background:var(--card);border:1px solid var(--border);color:var(--txt2);padding:8px 20px;border-radius:24px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13px;cursor:pointer;transition:.2s;}
+  .filter-btn:hover,.filter-btn.active{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+  /* ─── REVIEWS PAGE ─── */
+  .reviews-layout{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:50px;}
+  @media(max-width:768px){.reviews-layout{grid-template-columns:1fr;}}
+
+  /* ─── RATING CALCULATOR ─── */
+  .calc-box{background:var(--card);border:1px solid var(--acc);border-radius:16px;padding:28px;}
+  .calc-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--acc);margin-bottom:22px;letter-spacing:1px;}
+  .calc-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .calc-label{width:80px;font-size:13px;color:var(--txt2);font-weight:500;}
+  .calc-slider{flex:1;-webkit-appearance:none;height:6px;background:#2a2a4a;border-radius:3px;outline:none;cursor:pointer;}
+  .calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--acc2);cursor:pointer;}
+  .calc-val{width:46px;text-align:right;font-weight:700;font-size:14px;color:var(--acc2);}
+  .calc-result{margin-top:20px;padding:16px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;}
+  .calc-result span{font-size:13px;color:var(--txt2);}
+  .calc-result strong{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--acc2);}
+
+  /* ─── REVIEW FORM ─── */
+  .form-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;}
+  .form-title{font-size:20px;font-weight:700;margin-bottom:22px;}
+  .form-group{margin-bottom:18px;}
+  .form-label{display:block;font-size:13px;color:var(--txt2);font-weight:500;margin-bottom:8px;}
+  .form-input,.form-textarea{width:100%;background:#181826;border:1px solid #2a2a4a;border-radius:8px;padding:11px 14px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:.2s;}
+  .form-input:focus,.form-textarea:focus{border-color:var(--acc);}
+  .form-textarea{min-height:90px;resize:vertical;}
+  .star-rating{display:flex;gap:6px;margin-top:4px;}
+  .star-rating .star-btn{font-size:28px;cursor:pointer;color:#333;transition:.2s;background:none;border:none;}
+  .star-rating .star-btn:hover,.star-rating .star-btn.active{color:#FFD700;}
+
+  /* ─── REVIEW CARDS ─── */
+  .review-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;transition:.2s;}
+  .review-card:hover{border-color:rgba(229,9,20,.2);}
+  .review-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+  .review-meta h3{font-size:18px;font-weight:700;margin-bottom:2px;}
+  .review-meta .by{font-size:13px;color:var(--txt2);}
+  .review-badge{background:var(--acc);color:#fff;padding:4px 12px;border-radius:20px;font-weight:700;font-size:13px;}
+  .review-badge.amber{background:var(--acc2);color:#000;}
+  .review-body{color:var(--txt2);font-size:14px;line-height:1.7;margin:12px 0;}
+  .review-body.hidden{display:none;}
+  .review-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* ─── CONTACT ─── */
+  .contact-layout{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+  @media(max-width:768px){.contact-layout{grid-template-columns:1fr;}}
+  .info-cards{display:flex;flex-direction:column;gap:16px;}
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:18px;}
+  .info-icon{font-size:30px;width:52px;height:52px;background:rgba(229,9,20,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .info-text h4{font-weight:700;font-size:15px;margin-bottom:3px;}
+  .info-text p{color:var(--txt2);font-size:14px;}
+
+  /* ─── FOOTER ─── */
+  footer{background:var(--nav);border-top:1px solid var(--border);padding:32px 48px;text-align:center;}
+  footer p{color:var(--txt2);font-size:14px;}
+  footer span{color:var(--acc);}
+
+  /* ─── ABOUT STRIP ─── */
+  .about-strip{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center;}
+  .about-stat h3{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--acc2);}
+  .about-stat p{color:var(--txt2);font-size:14px;}
+
+  /* ─── BUTTONS SHOWCASE ─── */
+  .btn-showcase{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;}
+  .btn-showcase h3{font-size:16px;color:var(--txt2);font-weight:500;margin-bottom:18px;letter-spacing:.5px;}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;}
+
+  /* ─── TOAST ─── */
+  .toast{position:fixed;bottom:30px;right:30px;background:#27ae60;color:#fff;padding:14px 22px;border-radius:10px;font-weight:600;font-size:14px;z-index:9999;opacity:0;transform:translateY(20px);transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width:768px){
+    nav{padding:0 20px;}
+    .nav-links{display:none;}
+    .hero-content h1{font-size:56px;}
+    .slide-inner{flex-direction:column;padding:40px 20px;}
+    .slide-poster{width:100%;height:180px;}
+    .slide-info h2{font-size:40px;}
+    .section{padding:40px 20px;}
+    .about-strip{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home')">CINE<span>RATE</span></div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="showPage('movies')" id="nav-movies">Movies</a></li>
+    <li><a onclick="showPage('reviews')" id="nav-reviews">Reviews</a></li>
+    <li><a onclick="showPage('contact')" id="nav-contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta btn" onclick="showPage('contact')">Contact Us</button>
+</nav>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1>CINERATE</h1>
+      <p>Discover · Rate · Review the World's Greatest Films</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary btn-lg" onclick="showPage('movies')">🎬 Browse Movies</button>
+        <button class="btn btn-secondary btn-lg" onclick="showPage('reviews')">⭐ Write a Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE SLIDER -->
+  <div class="section">
+    <div class="section-title">🎥 Featured Films</div>
+    <div class="section-sub">This week's must-watch selections</div>
+    <div class="slider-wrap" style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+      <div class="slider-track" id="sliderTrack">
+        <!-- Slide 1 -->
+        <div class="slide">
+          <div class="slide-inner">
+            <div class="slide-info">
+              <span class="tag">Sci-Fi · Adventure</span>
+              <h2>Dune: Part Two</h2>
+              <div class="genre">Director: Denis Villeneuve &nbsp;·&nbsp; 2024</div>
+              <div class="stars" style="margin-bottom:18px;">
+                <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+              </div>
+              <p style="color:var(--txt2);font-size:15px;line-height:1.7;margin-bottom:24px;">Paul Atreides unites with Chani and the Fremen while on a path of revenge against those who destroyed his family.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="showPage('reviews')">View Review</button>
+                <button class="btn btn-amber" onclick="showPage('reviews')">Calculate Rating</button>
+              </div>
+            </div>
+            <div class="slide-poster">🏜️</div>
+          </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="slide">
+          <div class="slide-inner">
+            <div class="slide-info">
+              <span class="tag">Drama · History</span>
+              <h2>Oppenheimer</h2>
+              <div class="genre">Director: Christopher Nolan &nbsp;·&nbsp; 2023</div>
+              <div class="stars" style="margin-bottom:18px;">
+                <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+              </div>
+              <p style="color:var(--txt2);font-size:15px;line-height:1.7;margin-bottom:24px;">The story of J. Robert Oppenheimer and his role in developing the first nuclear weapon during World War II.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="showPage('reviews')">View Review</button>
+                <button class="btn btn-amber" onclick="showPage('reviews')">Calculate Rating</button>
+              </div>
+            </div>
+            <div class="slide-poster">⚛️</div>
+          </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="slide">
+          <div class="slide-inner">
+            <div class="slide-info">
+              <span class="tag">Action · Crime</span>
+              <h2>The Batman</h2>
+              <div class="genre">Director: Matt Reeves &nbsp;·&nbsp; 2022</div>
+              <div class="stars" style="margin-bottom:18px;">
+                <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+              </div>
+              <p style="color:var(--txt2);font-size:15px;line-height:1.7;margin-bottom:24px;">When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="showPage('reviews')">View Review</button>
+                <button class="btn btn-amber" onclick="showPage('reviews')">Calculate Rating</button>
+              </div>
+            </div>
+            <div class="slide-poster">🦇</div>
+          </div>
+        </div>
+      </div>
+      <!-- Arrows -->
+      <div class="slider-arrows">
+        <button class="arrow" onclick="slideMove(-1)">&#8592;</button>
+        <button class="arrow" onclick="slideMove(1)">&#8594;</button>
+      </div>
+      <!-- Dots -->
+      <div class="slider-dots" id="sliderDots">
+        <button class="dot active" onclick="slideTo(0)"></button>
+        <button class="dot" onclick="slideTo(1)"></button>
+        <button class="dot" onclick="slideTo(2)"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDING -->
+  <div class="section" style="padding-top:0;">
+    <div class="section-title">🔥 Trending Now</div>
+    <div class="section-sub">Most reviewed films this week</div>
+    <div class="movie-grid">
+      <div class="movie-card">
+        <div class="movie-poster">😌<span class="rating-badge">⭐ 8.4</span></div>
+        <div class="movie-body">
+          <div class="movie-title">Poor Things</div>
+          <div class="movie-genre">Comedy Drama · 2023</div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+          <div class="card-btns">
+            <button class="btn btn-primary btn-sm" onclick="showPage('reviews')">View Review</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleReview('tr1')">Hide Review</button>
+          </div>
+        </div>
+      </div>
+      <div class="movie-card">
+        <div class="movie-poster">🌺<span class="rating-badge">⭐ 7.7</span></div>
+        <div class="movie-body">
+          <div class="movie-title">Killers of the Flower Moon</div>
+          <div class="movie-genre">Crime Drama · 2023</div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+          <div class="card-btns">
+            <button class="btn btn-primary btn-sm" onclick="showPage('reviews')">View Review</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleReview('tr2')">Hide Review</button>
+          </div>
+        </div>
+      </div>
+      <div class="movie-card">
+        <div class="movie-poster">🕵️<span class="rating-badge">⭐ 8.1</span></div>
+        <div class="movie-body">
+          <div class="movie-title">Mission: Impossible</div>
+          <div class="movie-genre">Action Thriller · 2023</div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+          <div class="card-btns">
+            <button class="btn btn-primary btn-sm" onclick="showPage('reviews')">View Review</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleReview('tr3')">Hide Review</button>
+          </div>
+        </div>
+      </div>
+      <div class="movie-card">
+        <div class="movie-poster">🌊<span class="rating-badge">⭐ 7.5</span></div>
+        <div class="movie-body">
+          <div class="movie-title">Zone of Interest</div>
+          <div class="movie-genre">Historical Drama · 2023</div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+          <div class="card-btns">
+            <button class="btn btn-primary btn-sm" onclick="showPage('reviews')">View Review</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleReview('tr4')">Hide Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL BUTTONS SHOWCASE -->
+  <div class="section" style="padding-top:0;">
+    <div class="btn-showcase">
+      <h3>⚡ REQUIRED BUTTONS</h3>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showPage('reviews')">👁 View Review</button>
+        <button class="btn btn-secondary" onclick="hideAllReviews()">🙈 Hide Review</button>
+        <button class="btn btn-amber" onclick="showPage('reviews')">🧮 Calculate Rating</button>
+        <button class="btn btn-green" onclick="showPage('reviews')">✍️ Submit Review</button>
+        <button class="btn btn-blue" onclick="showPage('contact')">📩 Contact</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="about-strip">
+    <div class="about-stat"><h3>1,200+</h3><p>Movies in Database</p></div>
+    <div class="about-stat"><h3>50K+</h3><p>User Reviews</p></div>
+    <div class="about-stat"><h3>4.8★</h3><p>Average Rating Quality</p></div>
+  </div>
+
+  <footer><p>© 2024 <span>CineRate</span> · Made with ❤️ for Cinema Lovers</p></footer>
+</div>
+
+<!-- ══════════════ MOVIES PAGE ══════════════ -->
+<div class="page" id="page-movies">
+  <div class="section">
+    <div class="section-title">🎬 All Movies</div>
+    <div class="section-sub">Browse our full collection — filter by genre</div>
+    <div class="filters" id="movieFilters">
+      <button class="filter-btn active" onclick="filterMovies('all',this)">All</button>
+      <button class="filter-btn" onclick="filterMovies('action',this)">Action</button>
+      <button class="filter-btn" onclick="filterMovies('drama',this)">Drama</button>
+      <button class="filter-btn" onclick="filterMovies('sci-fi',this)">Sci-Fi</button>
+      <button class="filter-btn" onclick="filterMovies('comedy',this)">Comedy</button>
+      <button class="filter-btn" onclick="filterMovies('crime',this)">Crime</button>
+    </div>
+    <div class="movie-grid" id="moviesGrid">
+      <!-- JS will render -->
+    </div>
+  </div>
+  <footer><p>© 2024 <span>CineRate</span> · Made with ❤️ for Cinema Lovers</p></footer>
+</div>
+
+<!-- ══════════════ REVIEWS PAGE ══════════════ -->
+<div class="page" id="page-reviews">
+  <div class="section">
+    <div class="section-title">⭐ Movie Reviews</div>
+    <div class="section-sub">Rate, calculate, and share your film opinions</div>
+
+    <div class="reviews-layout">
+      <!-- RATING CALCULATOR -->
+      <div class="calc-box">
+        <div class="calc-title">🧮 Rating Calculator</div>
+        <div class="calc-row">
+          <span class="calc-label">Story</span>
+          <input type="range" class="calc-slider" id="s1" min="1" max="10" value="9" oninput="updateCalc()"/>
+          <span class="calc-val" id="v1">9/10</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Acting</span>
+          <input type="range" class="calc-slider" id="s2" min="1" max="10" value="8" oninput="updateCalc()"/>
+          <span class="calc-val" id="v2">8/10</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Direction</span>
+          <input type="range" class="calc-slider" id="s3" min="1" max="10" value="9" oninput="updateCalc()"/>
+          <span class="calc-val" id="v3">9/10</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Visuals</span>
+          <input type="range" class="calc-slider" id="s4" min="1" max="10" value="8" oninput="updateCalc()"/>
+          <span class="calc-val" id="v4">8/10</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Music</span>
+          <input type="range" class="calc-slider" id="s5" min="1" max="10" value="7" oninput="updateCalc()"/>
+          <span class="calc-val" id="v5">7/10</span>
+        </div>
+        <div class="calc-result">
+          <span>Average Rating</span>
+          <strong id="calcAvg">8.2<span style="font-size:20px;color:var(--txt2)"> / 10</span></strong>
+        </div>
+        <button class="btn btn-amber btn-lg" style="width:100%;margin-top:16px;" onclick="calculateRating()">🧮 Calculate Rating</button>
+      </div>
+
+      <!-- SUBMIT FORM -->
+      <div class="form-box">
+        <div class="form-title">✍️ Submit Your Review</div>
+        <div class="form-group">
+          <label class="form-label">Movie Name</label>
+          <input class="form-input" id="revMovie" type="text" placeholder="e.g. Oppenheimer"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input class="form-input" id="revName" type="text" placeholder="e.g. John Doe"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Review</label>
+          <textarea class="form-textarea" id="revText" placeholder="Write your thoughts about the film..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Rating</label>
+          <div class="star-rating" id="starRating">
+            <button class="star-btn" onclick="setRating(1)">★</button>
+            <button class="star-btn" onclick="setRating(2)">★</button>
+            <button class="star-btn" onclick="setRating(3)">★</button>
+            <button class="star-btn" onclick="setRating(4)">★</button>
+            <button class="star-btn" onclick="setRating(5)">★</button>
+          </div>
+        </div>
+        <button class="btn btn-green btn-lg" style="width:100%;" onclick="submitReview()">✍️ Submit Review</button>
+      </div>
+    </div>
+
+    <!-- REVIEW CARDS -->
+    <div class="section-title" style="margin-bottom:20px;">👥 User Reviews</div>
+    <div id="reviewsList">
+      <div class="review-card" id="rc1">
+        <div class="review-header">
+          <div class="review-meta"><h3>Oppenheimer</h3><div class="by">by Rajesh M. &nbsp;·&nbsp; April 2024</div></div>
+          <span class="review-badge">⭐ 9.2</span>
+        </div>
+        <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
+        <div class="review-body" id="rb1">A cinematic masterpiece. Nolan at his absolute best — breathtaking practical effects, a career-defining performance from Cillian Murphy, and a score by Ludwig Göransson that will haunt you for days. Essential cinema.</div>
+        <div class="review-actions">
+          <button class="btn btn-primary btn-sm" onclick="viewReview('rb1',this)">👁 View Review</button>
+          <button class="btn btn-secondary btn-sm" onclick="hideReview('rb1',this)">🙈 Hide Review</button>
+        </div>
+      </div>
+
+      <div class="review-card" id="rc2">
+        <div class="review-header">
+          <div class="review-meta"><h3>Dune: Part Two</h3><div class="by">by Priya S. &nbsp;·&nbsp; March 2024</div></div>
+          <span class="review-badge amber">⭐ 8.8</span>
+        </div>
+        <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+        <div class="review-body" id="rb2">Visually stunning, emotionally resonant. Denis Villeneuve has created one of the greatest sci-fi films of our generation. Zendaya and Chalamet share incredible chemistry. A must-watch on the biggest screen possible.</div>
+        <div class="review-actions">
+          <button class="btn btn-primary btn-sm" onclick="viewReview('rb2',this)">👁 View Review</button>
+          <button class="btn btn-secondary btn-sm" onclick="hideReview('rb2',this)">🙈 Hide Review</button>
+        </div>
+      </div>
+
+      <div class="review-card" id="rc3">
+        <div class="review-header">
+          <div class="review-meta"><h3>Poor Things</h3><div class="by">by Amit K. &nbsp;·&nbsp; February 2024</div></div>
+          <span class="review-badge">⭐ 8.5</span>
+        </div>
+        <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
+        <div class="review-body" id="rb3">Bizarre, beautiful, and brilliantly acted. Emma Stone deserves every award for this transformative performance. Yorgos Lanthimos at his most accessible — challenging but deeply rewarding cinema.</div>
+        <div class="review-actions">
+          <button class="btn btn-primary btn-sm" onclick="viewReview('rb3',this)">👁 View Review</button>
+          <button class="btn btn-secondary btn-sm" onclick="hideReview('rb3',this)">🙈 Hide Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><p>© 2024 <span>CineRate</span> · Made with ❤️ for Cinema Lovers</p></footer>
+</div>
+
+<!-- ══════════════ CONTACT PAGE ══════════════ -->
+<div class="page" id="page-contact">
+  <div class="section">
+    <div class="section-title">📩 Contact Us</div>
+    <div class="section-sub">Have a suggestion? Want to recommend a film? Reach out!</div>
+    <div class="contact-layout">
+      <div class="form-box">
+        <div class="form-title">Send us a message</div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="cName" type="text" placeholder="Your full name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" id="cEmail" type="email" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input class="form-input" id="cSubject" type="text" placeholder="e.g. Movie Suggestion"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-textarea" id="cMsg" placeholder="Type your message here..." style="min-height:120px;"></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;" onclick="sendContact()">📩 Contact</button>
+      </div>
+      <div class="info-cards">
+        <div class="info-card">
+          <div class="info-icon">📧</div>
+          <div class="info-text"><h4>Email</h4><p>hello@cinerate.com</p></div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">📍</div>
+          <div class="info-text"><h4>Location</h4><p>Mumbai, India</p></div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">🕐</div>
+          <div class="info-text"><h4>Response Time</h4><p>Within 24 hours</p></div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">🎬</div>
+          <div class="info-text"><h4>Movie Suggestions</h4><p>We review every suggestion!</p></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-secondary">🐦 Twitter/X</button>
+          <button class="btn btn-secondary">📸 Instagram</button>
+          <button class="btn btn-secondary">🎞️ Letterboxd</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><p>© 2024 <span>CineRate</span> · Made with ❤️ for Cinema Lovers</p></footer>
+</div>
+
+<script>
+// ─── PAGE NAVIGATION ─────────────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── SLIDER ──────────────────────────────────────────────────────────────────
+let currentSlide=0;const totalSlides=3;let autoPlay;
+function slideTo(i){
+  currentSlide=i;
+  document.getElementById('sliderTrack').style.transform=`translateX(-${i*100}%)`;
+  document.querySelectorAll('.dot').forEach((d,idx)=>d.classList.toggle('active',idx===i));
+}
+function slideMove(dir){
+  currentSlide=(currentSlide+dir+totalSlides)%totalSlides;
+  slideTo(currentSlide);
+}
+function startAuto(){autoPlay=setInterval(()=>slideMove(1),4000);}
+function stopAuto(){clearInterval(autoPlay);}
+document.querySelector('.slider-wrap')?.addEventListener('mouseenter',stopAuto);
+document.querySelector('.slider-wrap')?.addEventListener('mouseleave',startAuto);
+startAuto();
+
+// ─── MOVIES DATA & GRID ───────────────────────────────────────────────────────
+const moviesData=[
+  {title:"Dune: Part Two",rating:"8.6",genre:"sci-fi",label:"Sci-Fi",emoji:"🏜️",year:"2024"},
+  {title:"Oppenheimer",rating:"8.4",genre:"drama",label:"Drama",emoji:"⚛️",year:"2023"},
+  {title:"The Batman",rating:"7.8",genre:"action",label:"Action",emoji:"🦇",year:"2022"},
+  {title:"Poor Things",rating:"8.4",genre:"comedy",label:"Comedy",emoji:"😌",year:"2023"},
+  {title:"Inception",rating:"8.8",genre:"sci-fi",label:"Sci-Fi",emoji:"🌀",year:"2010"},
+  {title:"Parasite",rating:"8.6",genre:"drama",label:"Drama",emoji:"🏠",year:"2019"},
+  {title:"The Dark Knight",rating:"9.0",genre:"action",label:"Action",emoji:"🃏",year:"2008"},
+  {title:"Interstellar",rating:"8.6",genre:"sci-fi",label:"Sci-Fi",emoji:"🚀",year:"2014"},
+  {title:"Whiplash",rating:"8.5",genre:"drama",label:"Drama",emoji:"🥁",year:"2014"},
+  {title:"Killers of the Flower Moon",rating:"7.7",genre:"crime",label:"Crime",emoji:"🌺",year:"2023"},
+  {title:"The Holdovers",rating:"7.9",genre:"comedy",label:"Comedy",emoji:"📚",year:"2023"},
+  {title:"Zone of Interest",rating:"7.5",genre:"drama",label:"Drama",emoji:"🌊",year:"2023"},
+];
+
+function renderMovies(filter='all'){
+  const grid=document.getElementById('moviesGrid');
+  const filtered=filter==='all'?moviesData:moviesData.filter(m=>m.genre===filter);
+  const stars=(r)=>{const n=Math.round(parseFloat(r)/2);let s='';for(let i=0;i<5;i++)s+=`<span class="star ${i<n?'filled':''}">★</span>`;return s;};
+  grid.innerHTML=filtered.map(m=>`
+    <div class="movie-card">
+      <div class="movie-poster">${m.emoji}<span class="rating-badge">⭐ ${m.rating}</span></div>
+      <div class="movie-body">
+        <div class="movie-title">${m.title}</div>
+        <div class="movie-genre">${m.label} · ${m.year}</div>
+        <div class="stars">${stars(m.rating)}</div>
+        <div class="card-btns">
+          <button class="btn btn-primary btn-sm" onclick="showPage('reviews')">View Review</button>
+          <button class="btn btn-amber btn-sm" onclick="showPage('reviews')">Calculate Rating</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function filterMovies(genre,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMovies(genre);
+}
+renderMovies();
+
+// ─── RATING CALCULATOR ───────────────────────────────────────────────────────
+function updateCalc(){
+  const ids=[1,2,3,4,5];
+  let total=0;
+  ids.forEach(i=>{
+    const val=parseInt(document.getElementById('s'+i).value);
+    document.getElementById('v'+i).textContent=val+'/10';
+    total+=val;
+  });
+  const avg=(total/5).toFixed(1);
+  document.getElementById('calcAvg').innerHTML=avg+'<span style="font-size:20px;color:var(--txt2)"> / 10</span>';
+}
+function calculateRating(){
+  updateCalc();
+  showToast('🧮 Rating calculated successfully!');
+}
+
+// ─── STAR RATING ─────────────────────────────────────────────────────────────
+let selectedRating=0;
+function setRating(n){
+  selectedRating=n;
+  document.querySelectorAll('#starRating .star-btn').forEach((btn,i)=>{
+    btn.classList.toggle('active',i<n);
+  });
+}
+
+// ─── REVIEW SHOW/HIDE ─────────────────────────────────────────────────────────
+function viewReview(id,btn){
+  document.getElementById(id).classList.remove('hidden');
+  showToast('👁 Review is now visible!');
+}
+function hideReview(id,btn){
+  document.getElementById(id).classList.add('hidden');
+  showToast('🙈 Review hidden!');
+}
+function toggleReview(id){showToast('🙈 Review toggled!');}
+function hideAllReviews(){
+  ['rb1','rb2','rb3'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  showToast('🙈 All reviews hidden!');
+}
+
+// ─── SUBMIT REVIEW ────────────────────────────────────────────────────────────
+function submitReview(){
+  const movie=document.getElementById('revMovie').value.trim();
+  const name=document.getElementById('revName').value.trim();
+  const text=document.getElementById('revText').value.trim();
+  if(!movie||!name||!text){showToast('⚠️ Please fill all fields!','#e67e22');return;}
+  const stars=['★','★','★','★','★'].map((s,i)=>`<span class="star ${i<selectedRating?'filled':''}">${s}</span>`).join('');
+  const newCard=`
+    <div class="review-card">
+      <div class="review-header">
+        <div class="review-meta"><h3>${movie}</h3><div class="by">by ${name} · Just now</div></div>
+        <span class="review-badge amber">⭐ ${selectedRating*2}.0</span>
+      </div>
+      <div class="stars">${stars}</div>
+      <div class="review-body">${text}</div>
+      <div class="review-actions">
+        <button class="btn btn-primary btn-sm">👁 View Review</button>
+        <button class="btn btn-secondary btn-sm">🙈 Hide Review</button>
+      </div>
+    </div>`;
+  document.getElementById('reviewsList').insertAdjacentHTML('afterbegin',newCard);
+  document.getElementById('revMovie').value='';document.getElementById('revName').value='';document.getElementById('revText').value='';
+  setRating(0);showToast('✅ Review submitted successfully!','#27ae60');
+}
+
+// ─── CONTACT ──────────────────────────────────────────────────────────────────
+function sendContact(){
+  const n=document.getElementById('cName').value.trim();
+  const e=document.getElementById('cEmail').value.trim();
+  const m=document.getElementById('cMsg').value.trim();
+  if(!n||!e||!m){showToast('⚠️ Please fill all fields!','#e67e22');return;}
+  document.getElementById('cName').value='';document.getElementById('cEmail').value='';
+  document.getElementById('cSubject').value='';document.getElementById('cMsg').value='';
+  showToast('📩 Message sent! We will reply within 24 hours.','#27ae60');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg,color='#27ae60'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=color;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
